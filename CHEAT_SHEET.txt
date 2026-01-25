@@ -1,0 +1,285 @@
+================================================================================
+TEAMCOHERENCEMONITOR CHEAT SHEET
+================================================================================
+
+QUICK START
+-----------
+1. Clone: git clone https://github.com/DonkRonk17/TeamCoherenceMonitor.git
+2. Register: python teamcoherencemonitor.py register FORGE
+3. Monitor: python teamcoherencemonitor.py dashboard
+
+================================================================================
+CLI COMMANDS
+--------------------------------------------------------------------------------
+
+VIEW STATUS:
+  dashboard                     Full team dashboard
+  dashboard --compact           Compact view
+  score                         Team coherence score only
+  agents                        List all registered agents
+  agent <NAME>                  Detailed metrics for one agent
+  alerts                        View active alerts
+  alerts --severity CRITICAL    Filter alerts by severity
+
+RECORD EVENTS:
+  record-mention <AGENT>        Record @mention (unacknowledged)
+  record-mention <AGENT> --ack  Record acknowledged @mention
+  record-response <AGENT> <SEC> Record response latency
+  record-claim <AGENT>          Record incorrect claim
+  record-claim <AGENT> --correct Record correct claim
+
+MANAGE:
+  register <AGENT>              Register new agent
+  check                         Run full check and snapshot
+  export                        Export all data as JSON
+  reset                         Reset all monitoring data
+
+OPTIONS:
+  --version                     Show version
+  --data-dir <PATH>             Custom data directory
+  --help                        Show help
+
+================================================================================
+PYTHON API
+--------------------------------------------------------------------------------
+
+IMPORT:
+  from teamcoherencemonitor import TeamCoherenceMonitor
+
+INITIALIZE:
+  monitor = TeamCoherenceMonitor()
+  monitor = TeamCoherenceMonitor(data_dir=Path("/custom/path"))
+  monitor = TeamCoherenceMonitor(thresholds=custom_thresholds)
+
+AGENT MANAGEMENT:
+  monitor.register_agent("FORGE")
+  monitor.unregister_agent("FORGE")
+  monitor.get_agent("FORGE")
+  monitor.list_agents()
+
+RECORD EVENTS:
+  monitor.record_mention("FORGE", acknowledged=True)
+  monitor.record_acknowledgment("FORGE")
+  monitor.record_response("FORGE", latency=2.5)
+  monitor.record_claim("FORGE", correct=True)
+  monitor.record_error("FORGE")
+  monitor.record_activity("FORGE")
+
+GET SCORES:
+  score = monitor.get_coherence_score()
+  scores = monitor.get_agent_scores()
+  metrics = monitor.get_agent_metrics("FORGE")
+
+ALERTS:
+  alerts = monitor.check_all_alerts()
+  alerts = monitor.get_alerts()
+  alerts = monitor.get_alerts(severity="CRITICAL")
+  cleared = monitor.clear_alerts(agent="FORGE")
+
+SNAPSHOTS & TRENDS:
+  snapshot = monitor.take_snapshot()
+  trend = monitor.get_trend(minutes=30)
+
+DISPLAY:
+  print(monitor.format_dashboard())
+  print(monitor.format_dashboard(compact=True))
+
+PERSISTENCE:
+  monitor.save()
+  monitor.reset()
+
+INTEGRATION:
+  count = monitor.import_mentionguard_data(data)
+  count = monitor.import_liveaudit_data(data)
+  count = monitor.import_postmortem_data(data)
+  data = monitor.export_data()
+
+================================================================================
+COHERENCE SCORING
+--------------------------------------------------------------------------------
+
+SCORE COMPONENTS (Weighted Average):
+  - Acknowledgment Rate:  30%  (mentions acknowledged / total)
+  - Response Latency:     25%  (lower is better)
+  - Context Fidelity:     30%  (correct claims / total)
+  - Activity Status:      15%  (recency of activity)
+
+SCORE INTERPRETATION:
+  90-100  [OK]   Excellent - Team highly coordinated
+  75-89   [OK]   Good      - Normal operations
+  60-74   [!]    Fair      - Monitor closely
+  40-59   [!]    Poor      - Intervention recommended
+  0-39    [X]    Critical  - Stop and address issues
+
+================================================================================
+DEFAULT THRESHOLDS
+--------------------------------------------------------------------------------
+
+LATENCY (seconds):
+  Warning:   30.0
+  Critical:  60.0
+
+ACKNOWLEDGMENT RATE (percentage):
+  Warning:   80.0
+  Critical:  60.0
+
+CONTEXT FIDELITY (percentage):
+  Warning:   90.0
+  Critical:  70.0
+
+INACTIVITY (seconds):
+  Warning:   120.0  (2 minutes)
+  Critical:  300.0  (5 minutes)
+
+TEAM COHERENCE (percentage):
+  Warning:   75.0
+  Critical:  50.0
+
+================================================================================
+CUSTOM THRESHOLDS
+--------------------------------------------------------------------------------
+
+from teamcoherencemonitor import TeamCoherenceMonitor, Thresholds
+
+# Create custom thresholds
+custom = Thresholds(
+    latency_warning=20.0,
+    latency_critical=45.0,
+    ack_rate_warning=90.0,
+    ack_rate_critical=75.0,
+    fidelity_warning=95.0,
+    fidelity_critical=85.0,
+    inactive_warning=60.0,
+    inactive_critical=180.0,
+    coherence_warning=80.0,
+    coherence_critical=60.0,
+)
+
+monitor = TeamCoherenceMonitor(thresholds=custom)
+
+================================================================================
+INTEGRATION WITH OTHER TOOLS
+--------------------------------------------------------------------------------
+
+WITH MENTIONGUARD:
+  from teamcoherencemonitor import TeamCoherenceMonitor
+  from mentionguard import MentionGuard
+  
+  monitor = TeamCoherenceMonitor()
+  guard = MentionGuard()
+  
+  data = guard.export_events()
+  monitor.import_mentionguard_data(data)
+
+WITH LIVEAUDIT:
+  from liveaudit import LiveAudit
+  
+  audit = LiveAudit()
+  data = audit.export_issues()
+  monitor.import_liveaudit_data(data)
+
+WITH POSTMORTEM:
+  from postmortem import PostMortem
+  
+  pm = PostMortem()
+  pm.analyze("session.json")
+  data = pm.export_grades()
+  monitor.import_postmortem_data(data)
+
+WITH SYNAPSELINK:
+  from synapselink import quick_send
+  
+  score = monitor.get_coherence_score()
+  if score < 70:
+      quick_send("LOGAN", "Coherence Alert", f"Score: {score}")
+
+================================================================================
+DATA STORAGE
+--------------------------------------------------------------------------------
+
+DEFAULT LOCATION:
+  Windows:  C:\Users\<user>\.teamcoherencemonitor\
+  Linux:    ~/.teamcoherencemonitor/
+  macOS:    ~/.teamcoherencemonitor/
+
+FILES:
+  monitor_data.json    Agent data, thresholds, history
+
+CUSTOM LOCATION:
+  CLI:     --data-dir /path/to/dir
+  Python:  TeamCoherenceMonitor(data_dir=Path("/path"))
+
+================================================================================
+ALERT SEVERITY LEVELS
+--------------------------------------------------------------------------------
+
+CRITICAL [X]  - Immediate attention required
+  - Ack rate below 60%
+  - Latency above 60s
+  - Fidelity below 70%
+  - Inactive for 5+ minutes
+  - Team coherence below 50%
+
+WARNING [!]   - Monitor closely
+  - Ack rate below 80%
+  - Latency above 30s
+  - Fidelity below 90%
+  - Inactive for 2+ minutes
+  - Team coherence below 75%
+
+INFO [i]      - Informational only
+
+================================================================================
+COMMON PATTERNS
+--------------------------------------------------------------------------------
+
+SESSION START:
+  monitor = TeamCoherenceMonitor()
+  for agent in ["FORGE", "ATLAS", "CLIO"]:
+      monitor.register_agent(agent)
+
+PERIODIC CHECK:
+  alerts = monitor.check_all_alerts()
+  snapshot = monitor.take_snapshot()
+  if snapshot.overall_score < 70:
+      # Take action
+
+SESSION END:
+  monitor.take_snapshot()
+  data = monitor.export_data()
+  with open("session_data.json", "w") as f:
+      json.dump(data, f)
+  monitor.save()
+
+================================================================================
+TROUBLESHOOTING
+--------------------------------------------------------------------------------
+
+NO AGENTS REGISTERED:
+  Run: python teamcoherencemonitor.py register <AGENT>
+
+SCORE SEEMS WRONG:
+  Check individual metrics: python teamcoherencemonitor.py agent <NAME>
+
+DATA NOT PERSISTING:
+  Check permissions on ~/.teamcoherencemonitor/
+  Try manual save: monitor.save()
+
+ALERTS NOT CLEARING:
+  Alerts auto-clear after 1 hour
+  Manual clear: monitor.clear_alerts()
+
+================================================================================
+RESOURCES
+--------------------------------------------------------------------------------
+
+Documentation:   README.md
+Examples:        EXAMPLES.md
+Integration:     INTEGRATION_PLAN.md
+Quick Start:     QUICK_START_GUIDES.md
+GitHub:          https://github.com/DonkRonk17/TeamCoherenceMonitor
+Issues:          https://github.com/DonkRonk17/TeamCoherenceMonitor/issues
+
+================================================================================
+VERSION: 1.0 | AUTHOR: ATLAS (Team Brain) | LICENSE: MIT
+================================================================================

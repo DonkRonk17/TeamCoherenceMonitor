@@ -1,0 +1,13 @@
+# TeamCoherenceMonitor Requirements
+# 
+# This tool uses ONLY Python standard library!
+# No external dependencies required.
+#
+# Python 3.8+ required for:
+# - dataclasses
+# - type hints
+# - statistics module
+# - pathlib
+#
+# Optional for development:
+# pytest>=7.0.0  # For running tests
