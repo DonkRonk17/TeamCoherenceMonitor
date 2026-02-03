@@ -1,3 +1,5 @@
+<img width="1536" height="1024" alt="image" src="https://github.com/user-attachments/assets/2775a2b6-0b3a-4e63-af6d-79307702eb44" />
+
 # 🎯 TeamCoherenceMonitor
 
 **Real-Time Coordination Health Dashboard for Multi-Agent Teams**
@@ -811,6 +813,9 @@ if score < 70:
 ```
 
 ---
+
+<img width="1536" height="1024" alt="image" src="https://github.com/user-attachments/assets/124a1195-6e0a-4507-83a3-d05151eadad3" />
+
 
 ## 🤝 Contributing
 
